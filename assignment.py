@@ -8,7 +8,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import requests
-
+import Configuration
+from Library import ConfigReader
 
 class ZenPortal:
     '''Zenportal class'''
@@ -32,15 +33,19 @@ class ZenPortal:
         self.driver = webdriver.Chrome()
         self.driver.implicitly_wait(10)
         driver = self.driver
-        driver.get('https://www.zenclass.in/')
+        driver.maximize_window()
+        driver.get(ConfigReader.readConfigData('Details','URL'))
+
 
     def login(self):
-        '''Zenportal method'''
+        '''Login to guvi'''
         self.setup()
         self.driver.find_element(By.XPATH,
-        value=self.username).send_keys("shourya.ns@gmail.com")
+        value=self.username).send_keys(ConfigReader.readConfigData('Details','username'))
         self.driver.find_element(By.XPATH,
-        value=self.password).send_keys("******")
+        value=self.password).clear()
+        self.driver.find_element(By.XPATH,
+        value=self.password).send_keys(ConfigReader.readConfigData('Details','password'))
         self.driver.find_element(By.XPATH, value=self.submit_button).click()
         wait = WebDriverWait(self.driver,30)
         wait.until(EC.url_contains("https://www.zenclass.in/class"))
@@ -54,7 +59,7 @@ class ZenPortal:
         return soup.prettify()
 
     def list_elements(self):
-        '''Zenportal method'''
+        '''List all menu options'''
         self.login()
         zen_portal_menu=[]
         zenicon = self.driver.find_element(By.XPATH, value=self.zenportal_icon)
@@ -68,7 +73,7 @@ class ZenPortal:
         return zen_portal_menu
 
     def raise_queries(self):
-        '''Zenportal method'''
+        '''Raise Queries'''
         self.login()
         self.driver.implicitly_wait(10)
         zenicon = self.driver.find_element(By.XPATH, value=self.zenportal_icon)
@@ -92,19 +97,19 @@ class ZenPortal:
             (By.XPATH,value=self.enter_query_textbox)
             wait.until(EC.visibility_of(enterquery))
             enterquery.send_keys\
-            ("Guvi Python AT-1&2 Automation Project                    "
-             "This is a Project Test Code Running for the python Automation-1&2 Project Given by "
-             "menor Mr, Suman Gangopadhyay.")
+            (ConfigReader.readConfigData('Details','queryText'))
             self.driver.find_element(By.XPATH,value=self.get_answer_button).click()
             self.driver.find_element(By.XPATH,
             value=self.confirm_button).click()
             feedback=self.driver.find_element(By.XPATH,value=self.feedback_area)
             wait.until(EC.visibility_of(feedback))
             feedback.send_keys("Feedback")
-            self.driver.find_element\
-            (By.XPATH,value=self.done_button).click()
+            submit=self.driver.find_element\
+            (By.XPATH,value=self.done_button)
+            wait.until(EC.visibility_of(submit))
+            submit.click()
         return True
 
     def close_browser(self):
-        '''Zenportal method'''
+        '''Close browser'''
         self.driver.close()
